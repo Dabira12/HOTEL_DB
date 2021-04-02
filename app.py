@@ -62,7 +62,7 @@ def guestView():
             cursor.execute(sql.SQL("INSERT INTO customer VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)").format(
                 sql.Identifier("group_b02_g20)")),
                            [sin_number,first_name,middle_name,last_name,street_numbers,street,city,province,country,registration_date,phone_number])
-            # connection.commit()
+            connection.commit()
         elif(access == 2):
             sin_number = int(input("what is your sin number?"))
 
