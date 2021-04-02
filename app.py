@@ -6,17 +6,20 @@ import creds
 from psycopg2 import Error
 from psycopg2 import sql
 # Connect to an existing database
-connection = psycopg2.connect(user=creds.user,
-                                password=creds.password,
-                                host="web0.eecs.uottawa.ca",
-                                port=creds.port,
-                                database="group_b02_g20")
+try:
+    connection = psycopg2.connect(user=creds.user,
+                                    password=creds.password,
+                                    host="web0.eecs.uottawa.ca",
+                                    port=creds.port,
+                                    database="group_b02_g20")
 
-print("connected")
+    print("connected")
 
-# Create a cursor to perform database operations
-cursor = connection.cursor()
-# Print PostgreSQL details
+    # Create a cursor to perform database operations
+    cursor = connection.cursor()
+    # Print PostgreSQL details
+except:
+    print("Connection failed")
 
 # Executing a SQL query
 def adminView():
@@ -55,10 +58,11 @@ def guestView():
             country = str(input("what is your country?"))
             registration_date= date.today()
             registration_date = registration_date.strftime("%Y-%m-%d")
-            cursor.execute(sql.SQL("INSERT INTO customer VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)").format(
+            phone_number = int(input("What is your phone number?"))
+            cursor.execute(sql.SQL("INSERT INTO customer VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)").format(
                 sql.Identifier("group_b02_g20)")),
-                           [sin_number,first_name,middle_name,last_name,street_numbers,street,city,province,country,registration_date])
-            connection.commit()
+                           [sin_number,first_name,middle_name,last_name,street_numbers,street,city,province,country,registration_date,phone_number])
+            # connection.commit()
         elif(access == 2):
             sin_number = int(input("what is your sin number?"))
 
@@ -215,8 +219,11 @@ def main():
             break
         else:
             print("")
-            print("Please insert one of the 3 integer choices above only\n")
+            print("Please insert one of the integer choices above only\n")
             continue
+
+    cursor.close()
+    connection.close()
 if __name__ == '__main__':
     main()
 
