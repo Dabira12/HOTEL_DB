@@ -6,20 +6,18 @@ import creds
 from psycopg2 import Error
 from psycopg2 import sql
 # Connect to an existing database
-try:
-    connection = psycopg2.connect(user=creds.user,
-                                    password=creds.password,
-                                    host="web0.eecs.uottawa.ca",
-                                    port=creds.port,
-                                    database="group_b02_g20")
 
-    print("connected")
+connection = psycopg2.connect(user=creds.user,
+                                password=creds.password,
+                                host="web0.eecs.uottawa.ca",
+                                port=creds.port,
+                                database="group_b02_g20")
 
-    # Create a cursor to perform database operations
-    cursor = connection.cursor()
-    # Print PostgreSQL details
-except:
-    print("Connection failed")
+print("connected")
+
+# Create a cursor to perform database operations
+cursor = connection.cursor()
+# Print PostgreSQL details
 
 # Executing a SQL query
 def adminView():
@@ -32,10 +30,13 @@ def adminView():
             rows = cursor.fetchall()
             for row in rows:
                 print("SIN NUMBER =", row[0])
+            break
+        elif request ==2:
+            break
 
         else:
             print("")
-            print("Please insert one of the integer choices above only\n")
+            print("Please insert one of the integer choices above only or press 2 to exit\n")
             continue
 
 
@@ -89,11 +90,10 @@ def guestView():
 
 
                 elif(request==2):
-                    try:
+                    # try:
 
                         booking_number = generateBookingNumber()
-                        print(booking_number)
-                        # sin_number = int(input("what is your sin number?"))
+
                         room_id = int(input("what is the room id?"))
                         hotel_id = int(input("what is the hotel id?"))
                         start_date = str(input("what is the start date for this booking in the format(YYYY,MM,DD)"))
@@ -106,8 +106,8 @@ def guestView():
                         connection.commit()
                         print("You room has been booked")
                         break
-                        # cursor.execute(f'INSERT INTO booking_info(booking_number,sin_number,room_id,hotel_id,start_date,end_date,room_occupants) VALUES ({booking_number},{sin_number},{room_id},{hotel_id},{start_date},{end_date},{room_occupants})')
-                    except:
+
+                    # except:
                         print("error")
 
 
@@ -146,63 +146,67 @@ def fetchRoomOccupants(room_id):
 
 def employeeView():
     while True:
-        sin_number = int(input("Welcome to the Employee, please enter your sin number to sign in\n"))
-        cursor.execute(sql.SQL(
-            "SELECT employee.sin_number from employee WHERE employee.sin_number=%s").format(
-            sql.Identifier("group_b02_g20)")),
-            [sin_number])
-        value = cursor.fetchone()
-        if value==None:
-            print("Your sin number is invalid/not registered please enter it again or sign in as an admin to register your employee account\n")
+        sin_number = int(input("Welcome to the Employee, please enter your sin number to sign in or press 2 to exit\n"))
+        if sin_number ==2:
+            break
         else:
 
-            while True:
-                request = int(input("Select one of the following options: \n1.Search for availaible rooms \n2.Search for unavailable rooms \n3.Transform a booking into a rental agreement \n4.Exit Menu"))
-                if(request==1):
-                    hotel_id = int(input("enter the hotel id for the hotel you would like to book"))
-                    start_date = str(
-                        input("what is the preffered start date for the rooms you would like to see in the format(YYYY,MM,DD)"))
+            cursor.execute(sql.SQL(
+                "SELECT employee.sin_number from employee WHERE employee.sin_number=%s").format(
+                sql.Identifier("group_b02_g20)")),
+                [sin_number])
+            value = cursor.fetchone()
+            if value==None:
+                print("Your sin number is invalid/not registered please enter it again or sign in as an admin to register your employee account\n")
+            else:
 
-                    end_date = str(
-                        input("what is the preffered end date for the rooms you would like to see in the format(YYYY,MM,DD)"))
+                while True:
+                    request = int(input("Select one of the following options: \n1.Search for availaible rooms \n2.Search for unavailable rooms \n3.Transform a booking into a rental agreement \n4.Exit Menu\n"))
+                    if(request==1):
+                        hotel_id = int(input("enter the hotel id for the hotel you would like to book"))
+                        start_date = str(
+                            input("what is the preffered start date for the rooms you would like to see in the format(YYYY,MM,DD)"))
 
-                    cursor.execute(sql.SQL(
-                        "SELECT room.room_id, room.room_capacity, hotel_chain.hotel_id, booking_info.end_date from booking_info join room ON booking_info.room_id!=room.room_id join hotel_chain ON hotel_chain.hotel_id=%s AND(%s > booking_info.end_date AND %s<booking_info.start_date OR booking_info.room_id!=room.room_id)").format(
-                        sql.Identifier("group_b02_g20)")),
-                        [hotel_id, start_date, end_date])
+                        end_date = str(
+                            input("what is the preffered end date for the rooms you would like to see in the format(YYYY,MM,DD)"))
 
-                    rows = cursor.fetchall()
-                    for row in rows:
-                        print("room_id =", row[0], "capacity = ", row[1], )
+                        cursor.execute(sql.SQL(
+                            "SELECT room.room_id, room.room_capacity, hotel_chain.hotel_id, booking_info.end_date from booking_info join room ON booking_info.room_id!=room.room_id join hotel_chain ON hotel_chain.hotel_id=%s AND(%s > booking_info.end_date AND %s<booking_info.start_date OR booking_info.room_id!=room.room_id)").format(
+                            sql.Identifier("group_b02_g20)")),
+                            [hotel_id, start_date, end_date])
 
-                elif(request==2):
-                    hotel_id = int(input("enter the hotel id for the hotel you would like to book"))
-                    start_date = str(
-                        input("what is the preffered start date for the rooms you would like to see in the format(YYYY,MM,DD)"))
+                        rows = cursor.fetchall()
+                        for row in rows:
+                            print("room_id =", row[0], "capacity = ", row[1], )
 
-                    end_date = str(
-                        input("what is the preffered end date for the rooms you would like to see in the format(YYYY,MM,DD)"))
+                    elif(request==2):
+                        hotel_id = int(input("enter the hotel id for the hotel you would like to book"))
+                        start_date = str(
+                            input("what is the preffered start date for the rooms you would like to see in the format(YYYY,MM,DD)"))
 
-                    cursor.execute(sql.SQL(
-                        "SELECT room.room_id, room.room_capacity, hotel_chain.hotel_id, booking_info.end_date from booking_info join room ON booking_info.room_id!=room.room_id join hotel_chain ON hotel_chain.hotel_id=%s AND(%s <booking_info.end_date OR %s>booking_info.start_date AND booking_info.room_id=room.room_id)").format(
-                        sql.Identifier("group_b02_g20)")),
-                        [hotel_id, start_date, end_date])
+                        end_date = str(
+                            input("what is the preffered end date for the rooms you would like to see in the format(YYYY,MM,DD)"))
 
-                    rows = cursor.fetchall()
-                    for row in rows:
-                        print("room_id =", row[0], "capacity = ", row[1], )
-                elif(request==3):
-                    booking_number = int(input("What is the booking number?"))
-                    signed_date = date.today()
-                    signed_date = signed_date.strftime("%Y-%m-%d")
+                        cursor.execute(sql.SQL(
+                            "SELECT room.room_id, room.room_capacity, hotel_chain.hotel_id, booking_info.end_date from booking_info join room ON booking_info.room_id!=room.room_id join hotel_chain ON hotel_chain.hotel_id=%s AND(%s <booking_info.end_date OR %s>booking_info.start_date AND booking_info.room_id=room.room_id)").format(
+                            sql.Identifier("group_b02_g20)")),
+                            [hotel_id, start_date, end_date])
 
-                    cursor.execute(sql.SQL("INSERT INTO rental_agreement VALUES(%s,%s)").format(
-                        sql.Identifier("group_b02_g20)")),
-                        [booking_number, signed_date])
-                    connectiom.commit()
-                elif(request==4):
-                    break
-            break
+                        rows = cursor.fetchall()
+                        for row in rows:
+                            print("room_id =", row[0], "capacity = ", row[1], )
+                    elif(request==3):
+                        booking_number = int(input("What is the booking number?"))
+                        signed_date = date.today()
+                        signed_date = signed_date.strftime("%Y-%m-%d")
+
+                        cursor.execute(sql.SQL("INSERT INTO rental_agreement VALUES(%s,%s)").format(
+                            sql.Identifier("group_b02_g20)")),
+                            [booking_number, signed_date])
+                        connectiom.commit()
+                    elif(request==4):
+                        break
+                break
 
 
 
@@ -221,9 +225,9 @@ def main():
             print("")
             print("Please insert one of the integer choices above only\n")
             continue
-
-    cursor.close()
-    connection.close()
+    #
+    # cursor.close()
+    # connection.close()
 if __name__ == '__main__':
     main()
 
